@@ -129,7 +129,7 @@ public class EmployeeController {
         log.info("线程id为：{}", id);
 //        Long empId = (Long) request.getSession().getAttribute("employee");
 //        employee.setUpdateTime(LocalDateTime.now());
-//        employee.setUpdateUser(empId);
+
         employeeService.updateById(employee);
         return R.success("员工信息修改成功");
     }
