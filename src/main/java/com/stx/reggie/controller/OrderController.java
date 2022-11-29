@@ -5,10 +5,14 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.stx.reggie.common.R;
 import com.stx.reggie.dto.OrdersDto;
+import com.stx.reggie.dto.SetmealDto;
 import com.stx.reggie.entity.AddressBook;
+import com.stx.reggie.entity.Category;
 import com.stx.reggie.entity.Orders;
+import com.stx.reggie.entity.Setmeal;
 import com.stx.reggie.service.AdressBookService;
 import com.stx.reggie.service.OrdersService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/order")
 public class OrderController {
@@ -44,24 +49,32 @@ public class OrderController {
     }
 
     @GetMapping("/page")
-    public R<Page> page1(int page,int pageSize){
+    public R<Page> page1(int page,int pageSize,String number, String beginTime, String endTime){
+        log.info("{}{}{}",number,beginTime,endTime);
         Page<Orders> ordersPage = new Page<>(page,pageSize);
         Page<OrdersDto> ordersDtoPage = new Page<>();
         LambdaQueryWrapper<Orders> ordersLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        ordersLambdaQueryWrapper.like(number!=null,Orders::getId,number);
+        ordersLambdaQueryWrapper.ge(beginTime != null,Orders::getOrderTime,beginTime);
+        ordersLambdaQueryWrapper.le(endTime != null,Orders::getOrderTime,endTime);
         ordersLambdaQueryWrapper.orderByAsc(Orders::getOrderTime);
         ordersService.page(ordersPage,ordersLambdaQueryWrapper);
         BeanUtils.copyProperties(ordersPage,ordersDtoPage,"records");
+
+
         List<Orders> records = ordersPage.getRecords();
-        List<OrdersDto> ordersDtoslist = records.stream().map((item) ->{
+        List<OrdersDto> list = records.stream().map((item) -> {
             OrdersDto ordersDto = new OrdersDto();
-            Long addressBookId = item.getAddressBookId();
-            AddressBook addressBook = adressBookService.getById(addressBookId);
-            String consignee = addressBook.getConsignee();
             BeanUtils.copyProperties(item,ordersDto);
-            ordersDto.setUserName(consignee);
+            Long categoryId = item.getAddressBookId();
+            AddressBook addressBook = adressBookService.getById(categoryId);
+            ordersDto.setUserName(addressBook.getConsignee());
             return ordersDto;
+
         }).collect(Collectors.toList());
-        return R.success(ordersPage);
+        ordersDtoPage.setRecords(list);
+
+        return R.success(ordersDtoPage);
     }
 
     @PutMapping
