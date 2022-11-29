@@ -5,7 +5,9 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.stx.reggie.common.R;
 import com.stx.reggie.dto.OrdersDto;
+import com.stx.reggie.entity.AddressBook;
 import com.stx.reggie.entity.Orders;
+import com.stx.reggie.service.AdressBookService;
 import com.stx.reggie.service.OrdersService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,9 @@ public class OrderController {
 
     @Autowired
     private OrdersService ordersService;
+
+    @Autowired
+    private AdressBookService adressBookService;
 
     @PostMapping("/submit")
     public R<String> submit(@RequestBody Orders orders){
@@ -49,9 +54,11 @@ public class OrderController {
         List<Orders> records = ordersPage.getRecords();
         List<OrdersDto> ordersDtoslist = records.stream().map((item) ->{
             OrdersDto ordersDto = new OrdersDto();
+            Long addressBookId = item.getAddressBookId();
+            AddressBook addressBook = adressBookService.getById(addressBookId);
+            String consignee = addressBook.getConsignee();
             BeanUtils.copyProperties(item,ordersDto);
-            String userName = item.getUserName();
-            ordersDto.setUserName(userName);
+            ordersDto.setUserName(consignee);
             return ordersDto;
         }).collect(Collectors.toList());
         return R.success(ordersPage);
