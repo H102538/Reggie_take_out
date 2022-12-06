@@ -16,7 +16,7 @@ spring:
   redis:
     port: 6379
     host: localhost
-    database: 0
+    database: 1
     jedis:
       pool:
         max-active: 8
