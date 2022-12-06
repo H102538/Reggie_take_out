@@ -45,6 +45,9 @@ public class DishController {
     public R<String> save(@RequestBody DishDto dishDto){
        log.info("dishDto:{}",dishDto);
        dishService.saveWithFlavor(dishDto);
+       //清楚缓存
+        String key = "dish_" + dishDto.getCategoryId()+"_"+"1";
+        redisTemplate.delete(key);
         return R.success("新增菜品成功！！！");
     }
 
@@ -115,7 +118,9 @@ public class DishController {
            dishFlavorService.remove(dishFlavorLambda);
        }
         if (dishService.removeByIds(idList)){
-
+            //清楚redis缓存
+            String key = "dish_*";
+            redisTemplate.delete(key);
             return R.success("删除成功！！");
         }
 
@@ -131,6 +136,9 @@ public class DishController {
             dishLambdaWrapper.eq(Dish::getId,id).set(Dish::getStatus,st);
             dishService.update(dishLambdaWrapper);
         }
+        //清楚redis缓存
+        String key = "dish_*";
+        redisTemplate.delete(key);
 
         return R.success("操作成功！！！");
     }
