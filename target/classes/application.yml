@@ -23,6 +23,9 @@ spring:
         max-wait: 1ms
         max-idle: 4
         min-idle: 0
+  cache:
+    redis:
+      time-to-live: 1800000  #设置缓存时间
 
 mybatis-plus:
   configuration:
