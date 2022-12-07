@@ -83,7 +83,7 @@ public class SetmealController {
 
     @DeleteMapping
     @CacheEvict(value = "setmealCache",allEntries = true)
-    public R<String> delete(List<Long> ids){
+    public R<String> delete(@RequestParam List<Long> ids){
 
         setmealService.deleteWithDish(ids);
 
